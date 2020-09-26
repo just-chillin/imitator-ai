@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import string
 from collections import defaultdict
+from random import randrange
 from typing import Mapping
+
 from ftfy import fix_text
 
 BANNED_WORDS = ["RT", "AUDIENCE:"]
@@ -16,7 +18,9 @@ class Word:
     def most_frequent(self) -> Word:
         if len(self.chain.items()) == 0:
             return Word('.')
-        return max(self.chain.items(), key=lambda w: w[1])[0]
+        priority = sorted(self.chain.items(), key=lambda w: w[1])
+
+        return priority[randrange(0, 4) % len(self.chain.items())][0]
 
     def add_word(self, word: Word):
         self.chain[word] += 1
@@ -56,6 +60,8 @@ def is_valid_word(w: str):
 def get_words_dict(fname):
     words = dict()
     for line in open(fname, errors='ignore'):
+        if 'RT' in line:
+            continue
         line = list(filter(lambda w: is_valid_word(w), line.strip().split(' ')))
         for i in range(len(line) - 1):
             word, next_word = Word(line[i]), Word(line[i + 1])
@@ -65,10 +71,9 @@ def get_words_dict(fname):
     return words
 
 
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     skip_next_word = False
-    for k in get_words_dict('./trump-tweets.txt'):
+    for k in get_words_dict('./joey-tweets.txt'):
         if skip_next_word:
             skip_next_word = False
             continue
@@ -77,5 +82,3 @@ if __name__ == '__main__':
             if not sentence.endswith("\n"):
                 skip_next_word = True
             print(sentence, end='')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
